@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int @id   @default(autoincrement())
+  nom           String
+  prenom        String?
+  description   String
+  tel           String    @unique
+  email         String?   @unique
+  adresse       String
+  quartier      String
+  ville         String
+  photos        Photo[]
+  valide        Boolean   @default(false)
+  verifie       Boolean   @default(false)
+  societe       Boolean   @default(false)
+  prestataire   Boolean   @default(false)
+  password      String
+  services      Service[]
+  outils        Outil[]
+  notesRecues   Note[]    @relation(name: "prestataire")
+  notesDonnees  Note[]    @relation(name: "user")
+  avgNote       Float     @default(0)
+  missions      Mission[]
+  urlPhoto      String?
+}
+
+model Photo {
+  id            Int       @id @default(autoincrement())
+  url           String
+  user          User      @relation(fields: [userId], references: [id])
+  userId        Int
+  profil        Boolean   @default(false)
+}
+
+model Domaine {
+  id          Int         @id @default(autoincrement())
+  libelle     String      @unique
+  services    Service[]
+  missions    Mission[]
+}
+
+model Service {
+  id          Int         @id @default(autoincrement())
+  libelle     String
+  domaine     Domaine     @relation(fields: [domaineId], references: [id])
+  domaineId   Int
+  description String
+  user        User        @relation(fields: [userId], references: [id])
+  userId      Int  
+}
+
+model Outil {
+  id        Int               @id @default(autoincrement())
+  nom       String            @unique
+  users     User[]
+  missions  Mission[]
+}
+
+model Mission {
+  id              Int         @id @default(autoincrement())
+  titre           String
+  dateCreation    DateTime    @default(now())
+  domaine         Domaine     @relation(fields: [domaineId], references: [id])
+  domaineId       Int
+  outils          Outil[]
+  description     String
+  tarif           Float?
+  quartier        String
+  ville           String
+  user            User        @relation(fields: [userId], references: [id])
+  userId          Int
+  fin             Boolean     @default(false)
+}
+
+model Note {
+  id              Int     @id @default(autoincrement())
+  valeur          Int
+  avis            String
+  prestataire     User    @relation(name: "prestataire", fields: [prestataireId], references: [id])
+  prestataireId   Int
+  user            User    @relation(name: "user", fields: [userId], references: [id])
+  userId          Int
+}
